@@ -20,6 +20,7 @@ public class HellobootApplication {
 	public static void main(String[] args) {
 		GenericApplicationContext applicationContext = new GenericApplicationContext();
 		applicationContext.registerBean(HelloController.class);
+		applicationContext.registerBean(SimpleHelloService.class);
 		applicationContext.refresh(); //컨테이너 초기화 및 (Bean)빈 생성
 
 		ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
