@@ -9,23 +9,35 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class HellobootApplication {
 
 	public static void main(String[] args) {
-		//1. 스프링 컨테이너 생성 및 빈 등록
-		GenericWebApplicationContext applicationContext = new GenericWebApplicationContext(); // GenericApplicationContext -> GenericWebApplicationContext
+		GenericWebApplicationContext applicationContext = new GenericWebApplicationContext() {
+
+			/**
+			 * 스프링 초기화 중 (onRefresh()) 중에 디스패치 서블릿 설정
+			 * */
+			@Override
+			protected void onRefresh() {
+				super.onRefresh();
+
+				ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
+				WebServer webServer = serverFactory.getWebServer(servletContext -> {
+					servletContext.addServlet("dispatcherServlet",
+							new DispatcherServlet(this)
+					).addMapping("/*");
+				});
+				webServer.start();
+			}
+		};
+
 		applicationContext.registerBean(HelloController.class);
 		applicationContext.registerBean(SimpleHelloService.class);
-		applicationContext.refresh(); //컨테이너 초기화 및 (Bean)빈 생성
 
-		//2. 디스패처 서블릿 등록
-		ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
-		WebServer webServer = serverFactory.getWebServer(servletContext -> {
-			servletContext.addServlet("dispatcherServlet",
-					/**
-					 * TODO:: url - 컨트롤러 매핑 정보가 필요하다, 스프링 초기에는 XML 설정파일로 연결하였다, 최근에는 컨트롤러에 직접 매핑 url을 입력하는 추세
-					 * */
-					new DispatcherServlet(applicationContext)
-			).addMapping("/*");
-		});
-		webServer.start();
+		/*
+		 * 스프링 컨테이너 초기화 작업은 refresh() 메서드에서 다 일어난다.
+		 * 메서드는 전형적인 템플릿 메서드 패턴을 사용했다.
+		 *
+		 * 템플릿 메서드 안에서 차례대로 호출되는 Hook 메서드 중 하나가 onRefresh() 메서드이다.
+		 * 클래스를 상속받아 이 Hook 메서드를 재구현하면 된다.
+		 * */
+		applicationContext.refresh();
 	}
-
 }
