@@ -9,11 +9,13 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class HellobootApplication {
 
 	public static void main(String[] args) {
+		//1. 스프링 컨테이너 생성 및 빈 등록
 		GenericWebApplicationContext applicationContext = new GenericWebApplicationContext(); // GenericApplicationContext -> GenericWebApplicationContext
 		applicationContext.registerBean(HelloController.class);
 		applicationContext.registerBean(SimpleHelloService.class);
 		applicationContext.refresh(); //컨테이너 초기화 및 (Bean)빈 생성
 
+		//2. 디스패처 서블릿 등록
 		ServletWebServerFactory serverFactory = new TomcatServletWebServerFactory();
 		WebServer webServer = serverFactory.getWebServer(servletContext -> {
 			servletContext.addServlet("dispatcherServlet",
